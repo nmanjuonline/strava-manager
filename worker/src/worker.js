@@ -213,6 +213,44 @@ async function handleUpdateActivity(request, env, activityId) {
   return json(data, resp.status, env);
 }
 
+async function handleKudos(request, env, activityId) {
+  const accessToken = await getValidAccessToken(env);
+  if (!accessToken) return json({ error: "Not connected" }, 401, env);
+
+  const url = new URL(request.url);
+  const page = url.searchParams.get("page") || "1";
+  const perPage = url.searchParams.get("per_page") || "50";
+
+  const stravaUrl = new URL(`${STRAVA_API}/activities/${activityId}/kudos`);
+  stravaUrl.searchParams.set("page", page);
+  stravaUrl.searchParams.set("per_page", perPage);
+
+  const resp = await fetch(stravaUrl.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await resp.json();
+  return json(data, resp.status, env);
+}
+
+async function handleComments(request, env, activityId) {
+  const accessToken = await getValidAccessToken(env);
+  if (!accessToken) return json({ error: "Not connected" }, 401, env);
+
+  const url = new URL(request.url);
+  const page = url.searchParams.get("page") || "1";
+  const perPage = url.searchParams.get("per_page") || "50";
+
+  const stravaUrl = new URL(`${STRAVA_API}/activities/${activityId}/comments`);
+  stravaUrl.searchParams.set("page", page);
+  stravaUrl.searchParams.set("per_page", perPage);
+
+  const resp = await fetch(stravaUrl.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await resp.json();
+  return json(data, resp.status, env);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -241,6 +279,18 @@ export default {
     const activityMatch = url.pathname.match(/^\/api\/activities\/(\d+)$/);
     if (activityMatch && request.method === "PUT") {
       return handleUpdateActivity(request, env, activityMatch[1]);
+    }
+
+    const kudosMatch = url.pathname.match(/^\/api\/activities\/(\d+)\/kudos$/);
+    if (kudosMatch && request.method === "GET") {
+      return handleKudos(request, env, kudosMatch[1]);
+    }
+
+    const commentsMatch = url.pathname.match(
+      /^\/api\/activities\/(\d+)\/comments$/
+    );
+    if (commentsMatch && request.method === "GET") {
+      return handleComments(request, env, commentsMatch[1]);
     }
 
     return json({ error: "Not found" }, 404, env);

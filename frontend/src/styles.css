@@ -366,6 +366,93 @@ a {
   color: var(--ink-dim);
 }
 
+/* ---- Kudos / comments modal ---- */
+
+.social-section {
+  margin-bottom: 22px;
+}
+
+.social-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-transform: none;
+  margin: 0 0 10px;
+}
+
+.social-loading,
+.social-empty {
+  font-size: 13px;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+.kudos-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.kudos-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.kudos-item .avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+
+.comment-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.social-trigger {
+  background: none;
+  border: none;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.social-trigger:hover {
+  color: var(--accent);
+}
+
 @media (max-width: 520px) {
   .app-shell {
     padding: 24px 16px 60px;

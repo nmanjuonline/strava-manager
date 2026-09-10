@@ -57,6 +57,14 @@ export function updateActivity(id, fields) {
   });
 }
 
+export function getKudos(id) {
+  return request(`/api/activities/${id}/kudos?per_page=50`);
+}
+
+export function getComments(id) {
+  return request(`/api/activities/${id}/comments?per_page=50`);
+}
+
 export function logout() {
   return request("/api/logout", { method: "POST" });
 }

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getActivities, getAthlete, updateActivity } from "../api.js";
 import { formatDistance, formatDuration, formatDate } from "../format.js";
 import EditModal from "./EditModal.jsx";
+import SocialModal from "./SocialModal.jsx";
 
 const PER_PAGE = 20;
 
@@ -13,6 +14,7 @@ export default function ActivitiesList() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [gearOptions, setGearOptions] = useState({ bikes: [], shoes: [] });
   const [editingActivity, setEditingActivity] = useState(null);
+  const [socialActivity, setSocialActivity] = useState(null);
 
   useEffect(() => {
     getAthlete()
@@ -82,6 +84,14 @@ export default function ActivitiesList() {
                       gear: {gearNameById[activity.gear_id] || activity.gear_id}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    className="social-trigger"
+                    onClick={() => setSocialActivity(activity)}
+                  >
+                    ♥ {activity.kudos_count ?? 0} · 💬{" "}
+                    {activity.comment_count ?? 0}
+                  </button>
                 </div>
                 {activity.description && (
                   <p className="description">{activity.description}</p>
@@ -122,6 +132,13 @@ export default function ActivitiesList() {
           gearOptions={gearOptions}
           onClose={() => setEditingActivity(null)}
           onSave={handleSave}
+        />
+      )}
+
+      {socialActivity && (
+        <SocialModal
+          activity={socialActivity}
+          onClose={() => setSocialActivity(null)}
         />
       )}
     </div>
