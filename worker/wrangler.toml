@@ -1,0 +1,27 @@
+name = "strava-manager-proxy"
+main = "src/worker.js"
+compatibility_date = "2024-11-01"
+
+# KV namespace used to store the single-athlete Strava token set.
+# Create it with:  wrangler kv namespace create TOKENS
+# then paste the returned id below.
+kv_namespaces = [
+  { binding = "TOKENS", id = "REPLACE_WITH_KV_NAMESPACE_ID" }
+]
+
+[vars]
+# Your Strava API application's Client ID (safe to expose, it's public).
+STRAVA_CLIENT_ID = "REPLACE_WITH_YOUR_STRAVA_CLIENT_ID"
+
+# The URL where your frontend is hosted (GitHub Pages or Cloudflare Pages).
+# Used for CORS and for redirecting back after login. No trailing slash.
+FRONTEND_URL = "https://yourusername.github.io/strava-manager"
+
+# Secrets (never put these here) — set with:
+#   wrangler secret put STRAVA_CLIENT_SECRET
+#   wrangler secret put APP_SECRET
+#
+# STRAVA_CLIENT_SECRET: from your Strava API application settings.
+# APP_SECRET: a password you make up yourself. It gates access to this
+#             worker so random visitors can't drive your Strava account
+#             through it. Put the same value in the frontend when prompted.
