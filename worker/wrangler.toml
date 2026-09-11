@@ -1,4 +1,4 @@
-name = "strava-manager-proxy"
+name = "strava-manager"
 main = "src/worker.js"
 compatibility_date = "2024-11-01"
 
