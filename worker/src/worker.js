@@ -1,5 +1,5 @@
 /**
- * strava-manager-proxy
+ * strava-manager
  *
  * A small Cloudflare Worker that stands between the static frontend
  * (GitHub Pages / Cloudflare Pages) and the Strava API.

@@ -62,11 +62,11 @@ wrangler deploy
 ```
 
 This prints your worker's URL, something like
-`https://strava-manager-proxy.yoursubdomain.workers.dev`.
+`https://strava-manager.yoursubdomain.workers.dev`.
 
 Now go back to your Strava API application settings and set the
 **Authorization Callback Domain** to that host (without `https://`),
-e.g. `strava-manager-proxy.yoursubdomain.workers.dev`.
+e.g. `strava-manager.yoursubdomain.workers.dev`.
 
 ## 3. Configure and run the frontend
 
