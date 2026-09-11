@@ -16,6 +16,14 @@ Both pieces talk over plain HTTPS, so you can host the frontend on
 GitHub Pages while the worker runs on Cloudflare, or put both on
 Cloudflare — your choice.
 
+## Prerequisites
+
+- **Node.js 20+** (for building and deploying)
+- **npm** (included with Node.js)
+- A **Cloudflare account** (free plan works fine)
+- A **GitHub account** (if deploying frontend to GitHub Pages)
+- A **Strava account** with athlete data
+
 ## 1. Create a Strava API application
 
 1. Go to <https://www.strava.com/settings/api> and create an application
@@ -34,7 +42,7 @@ npm install -g wrangler   # if you don't have it already
 wrangler login
 
 # Create the KV namespace that stores your Strava refresh token
-wrangler kv namespace create TOKENS
+wrangler kv namespace create STRAVA_MANAGER_TOKENS
 # Copy the returned "id" into wrangler.toml under kv_namespaces
 ```
 
