@@ -189,11 +189,16 @@ export default function ActivitiesList() {
                 </div>
                 <div className="row-actions">
                   <button
-                    className="edit-btn"
+                    className="edit-icon-btn"
+                    title="Edit"
                     onClick={() => handleEditClick(activity)}
                     disabled={editLoadingId === activity.id}
                   >
-                    {editLoadingId === activity.id ? "Loading…" : "Edit"}
+                    {editLoadingId === activity.id ? (
+                      <span className="edit-spinner" />
+                    ) : (
+                      "✎"
+                    )}
                   </button>
                 </div>
               </div>
