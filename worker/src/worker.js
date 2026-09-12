@@ -27,9 +27,22 @@ const STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token";
 const STRAVA_API = "https://www.strava.com/api/v3";
 const TOKEN_KEY = "athlete-tokens";
 
+// CORS only ever compares against the browser's Origin header, which is
+// scheme+host only — never a path. FRONTEND_URL may include a path (e.g.
+// a GitHub Pages project site at /your-repo), so derive just the origin
+// for the CORS header while still using the full FRONTEND_URL wherever
+// we actually need to send the browser back to the app.
+function frontendOrigin(env) {
+  try {
+    return new URL(env.FRONTEND_URL).origin;
+  } catch {
+    return env.FRONTEND_URL || "*";
+  }
+}
+
 function corsHeaders(env) {
   return {
-    "Access-Control-Allow-Origin": env.FRONTEND_URL || "*",
+    "Access-Control-Allow-Origin": frontendOrigin(env),
     "Access-Control-Allow-Methods": "GET,PUT,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type,X-App-Secret",
   };
