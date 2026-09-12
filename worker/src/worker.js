@@ -180,6 +180,21 @@ async function handleActivities(request, env) {
   return json(data, resp.status, env);
 }
 
+// Strava's activity list only returns summary fields — description and
+// splits_metric (per-km pace/elevation/HR) are only present on the single
+// activity detail endpoint. The frontend calls this before opening the
+// edit form and when showing splits.
+async function handleActivityDetail(request, env, activityId) {
+  const accessToken = await getValidAccessToken(env);
+  if (!accessToken) return json({ error: "Not connected" }, 401, env);
+
+  const resp = await fetch(`${STRAVA_API}/activities/${activityId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await resp.json();
+  return json(data, resp.status, env);
+}
+
 async function handleUpdateActivity(request, env, activityId) {
   const accessToken = await getValidAccessToken(env);
   if (!accessToken) return json({ error: "Not connected" }, 401, env);
@@ -274,6 +289,11 @@ async function route(request, env) {
   if (url.pathname === "/api/athlete") return handleAthlete(request, env);
   if (url.pathname === "/api/activities")
     return handleActivities(request, env);
+
+  const activityDetailMatch = url.pathname.match(/^\/api\/activities\/(\d+)$/);
+  if (activityDetailMatch && request.method === "GET") {
+    return handleActivityDetail(request, env, activityDetailMatch[1]);
+  }
 
   const activityMatch = url.pathname.match(/^\/api\/activities\/(\d+)$/);
   if (activityMatch && request.method === "PUT") {

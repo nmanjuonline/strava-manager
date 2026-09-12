@@ -259,6 +259,87 @@ a {
   border-color: var(--accent);
 }
 
+.row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.copy-toast {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal);
+  margin-top: 4px;
+}
+
+/* ---- Splits ---- */
+
+.splits-wrap {
+  padding: 4px 0 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.splits-empty {
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  padding: 8px 0;
+}
+
+.splits-table {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.splits-header-row,
+.splits-row {
+  display: grid;
+  grid-template-columns: 32px 52px 1fr 48px 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.splits-header-row {
+  color: var(--ink-dim);
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+}
+
+.splits-bar-col {
+  position: relative;
+  height: 14px;
+  background: var(--surface-raised);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.splits-header-row .splits-bar-col {
+  background: none;
+}
+
+.splits-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.splits-elev,
+.splits-hr {
+  text-align: right;
+  color: var(--ink-dim);
+}
+
+.splits-pace {
+  color: var(--ink);
+}
+
+
 .empty-state,
 .loading-state {
   padding: 60px 0;

@@ -23,3 +23,12 @@ export function formatDate(iso) {
     year: "numeric",
   });
 }
+
+/** Converts speed in m/s to a "min:sec /km" pace string. */
+export function formatPace(metersPerSecond) {
+  if (!metersPerSecond) return "--:--";
+  const secondsPerKm = 1000 / metersPerSecond;
+  const m = Math.floor(secondsPerKm / 60);
+  const s = Math.round(secondsPerKm % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
