@@ -6,7 +6,7 @@ compatibility_date = "2024-11-01"
 # Create it with:  wrangler kv namespace create TOKENS
 # then paste the returned id below.
 kv_namespaces = [
-  { binding = "STRAVA_MANAGER_TOKENS", id = "06e787da74524107910b3f921020e9fc" }
+  { binding = "STRAVA_MANAGER_TOKENS", id = "ebc169e803ed4ea6bb25d46b22d59302" }
 ]
 
 [vars]
