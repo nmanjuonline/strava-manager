@@ -50,6 +50,10 @@ export function getActivities(page, perPage = 20) {
   return request(`/api/activities?page=${page}&per_page=${perPage}`);
 }
 
+export function getActivityDetail(id) {
+  return request(`/api/activities/${id}`);
+}
+
 export function updateActivity(id, fields) {
   return request(`/api/activities/${id}`, {
     method: "PUT",
