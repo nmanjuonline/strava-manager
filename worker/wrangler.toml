@@ -1,6 +1,6 @@
 name = "strava-manager"
 main = "src/worker.js"
-compatibility_date = "2024-11-01"
+compatibility_date = "2024-11-11"
 
 # KV namespace used to store the single-athlete Strava token set.
 # Create it with:  wrangler kv namespace create STRAVA_MANAGER_TOKENS
@@ -15,7 +15,7 @@ STRAVA_CLIENT_ID = "137524"
 
 # The URL where your frontend is hosted (GitHub Pages or Cloudflare Pages).
 # Used for CORS and for redirecting back after login. No trailing slash.
-FRONTEND_URL = "https://nmanjuonline.github.io/strava-manager"
+FRONTEND_URL = "https://nmanjuonline.github.io"
 
 # Secrets (never put these here) — set with:
 #   wrangler secret put STRAVA_CLIENT_SECRET
