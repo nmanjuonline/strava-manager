@@ -251,48 +251,92 @@ async function handleComments(request, env, activityId) {
   return json(data, resp.status, env);
 }
 
+async function route(request, env) {
+  const url = new URL(request.url);
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders(env) });
+  }
+
+  // Public routes (no APP_SECRET header check — they use it as a query
+  // param / are Strava redirecting the browser directly).
+  if (url.pathname === "/login") return handleLogin(request, env);
+  if (url.pathname === "/callback") return handleCallback(request, env);
+
+  // Everything else requires the shared app secret header.
+  if (!checkSecret(request, env)) {
+    return json({ error: "Unauthorized" }, 401, env);
+  }
+
+  if (url.pathname === "/api/status") return handleStatus(request, env);
+  if (url.pathname === "/api/logout" && request.method === "POST")
+    return handleLogout(request, env);
+  if (url.pathname === "/api/athlete") return handleAthlete(request, env);
+  if (url.pathname === "/api/activities")
+    return handleActivities(request, env);
+
+  const activityMatch = url.pathname.match(/^\/api\/activities\/(\d+)$/);
+  if (activityMatch && request.method === "PUT") {
+    return handleUpdateActivity(request, env, activityMatch[1]);
+  }
+
+  const kudosMatch = url.pathname.match(/^\/api\/activities\/(\d+)\/kudos$/);
+  if (kudosMatch && request.method === "GET") {
+    return handleKudos(request, env, kudosMatch[1]);
+  }
+
+  const commentsMatch = url.pathname.match(
+    /^\/api\/activities\/(\d+)\/comments$/
+  );
+  if (commentsMatch && request.method === "GET") {
+    return handleComments(request, env, commentsMatch[1]);
+  }
+
+  return json({ error: "Not found" }, 404, env);
+}
+
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
+    try {
+      // Fail loudly and immediately if required config is missing, so the
+      // error message says exactly what's wrong instead of throwing deep
+      // inside a handler as an opaque 500.
+      const missing = [
+        "STRAVA_CLIENT_ID",
+        "STRAVA_CLIENT_SECRET",
+        "FRONTEND_URL",
+        "APP_SECRET",
+      ].filter((key) => !env[key]);
+      if (missing.length > 0) {
+        return json(
+          {
+            error: "Worker misconfigured",
+            message: `Missing required config: ${missing.join(", ")}. Check wrangler.toml [vars] and your secrets.`,
+          },
+          500,
+          env
+        );
+      }
+      if (!env.TOKENS) {
+        return json(
+          {
+            error: "Worker misconfigured",
+            message:
+              "TOKENS KV binding is missing. Check the kv_namespaces id in wrangler.toml.",
+          },
+          500,
+          env
+        );
+      }
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders(env) });
+      return await route(request, env);
+    } catch (err) {
+      console.error(err);
+      return json(
+        { error: "Internal Server Error", message: String(err && err.message || err) },
+        500,
+        env
+      );
     }
-
-    // Public routes (no APP_SECRET header check — they use it as a query
-    // param / are Strava redirecting the browser directly).
-    if (url.pathname === "/login") return handleLogin(request, env);
-    if (url.pathname === "/callback") return handleCallback(request, env);
-
-    // Everything else requires the shared app secret header.
-    if (!checkSecret(request, env)) {
-      return json({ error: "Unauthorized" }, 401, env);
-    }
-
-    if (url.pathname === "/api/status") return handleStatus(request, env);
-    if (url.pathname === "/api/logout" && request.method === "POST")
-      return handleLogout(request, env);
-    if (url.pathname === "/api/athlete") return handleAthlete(request, env);
-    if (url.pathname === "/api/activities")
-      return handleActivities(request, env);
-
-    const activityMatch = url.pathname.match(/^\/api\/activities\/(\d+)$/);
-    if (activityMatch && request.method === "PUT") {
-      return handleUpdateActivity(request, env, activityMatch[1]);
-    }
-
-    const kudosMatch = url.pathname.match(/^\/api\/activities\/(\d+)\/kudos$/);
-    if (kudosMatch && request.method === "GET") {
-      return handleKudos(request, env, kudosMatch[1]);
-    }
-
-    const commentsMatch = url.pathname.match(
-      /^\/api\/activities\/(\d+)\/comments$/
-    );
-    if (commentsMatch && request.method === "GET") {
-      return handleComments(request, env, commentsMatch[1]);
-    }
-
-    return json({ error: "Not found" }, 404, env);
   },
 };
