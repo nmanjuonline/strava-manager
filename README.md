@@ -135,6 +135,39 @@ and shoes on file with Strava), sport type, and the commute/trainer
 toggles. Gear and sport type use dropdowns so you can't type something
 Strava won't accept.
 
+## 5. Auto-deploy on every push (optional but recommended)
+
+Two workflows are included under `.github/workflows/`:
+
+- **`deploy-pages.yml`** — builds and publishes `frontend/` to GitHub
+  Pages whenever files under `frontend/` change (already covered in
+  step 4).
+- **`deploy-worker.yml`** — deploys `worker/` to Cloudflare whenever
+  files under `worker/` change, including `wrangler.toml`. That means
+  editing `FRONTEND_URL` or `STRAVA_CLIENT_ID` in `wrangler.toml` and
+  pushing is all it takes to apply the change — no manual
+  `wrangler deploy` needed.
+
+To enable the worker workflow, add these **repository secrets**
+(Settings → Secrets and variables → Actions → Secrets → New repository
+secret):
+
+| Secret name | Where to get it |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → right sidebar of any domain/Workers overview page |
+| `STRAVA_CLIENT_SECRET` | Your Strava API app settings |
+| `APP_SECRET` | The app password you chose in step 2 |
+
+The workflow pushes `STRAVA_CLIENT_SECRET` and `APP_SECRET` as Worker
+secrets on every deploy (harmless to resend unchanged values), and
+applies the plain `[vars]` from `wrangler.toml` automatically since
+those are just part of the deployed config.
+
+Once these secrets are set, pushing any change under `worker/` —
+including just editing `wrangler.toml` — triggers a fresh deploy
+automatically.
+
 ## Notes
 
 - This is built for a single Strava account (yours). The worker only

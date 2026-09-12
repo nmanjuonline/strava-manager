@@ -1,0 +1,35 @@
+name: Deploy worker to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deploys worker/src/worker.js and applies the [vars] in
+      # worker/wrangler.toml (STRAVA_CLIENT_ID, FRONTEND_URL) on every run —
+      # so editing wrangler.toml and pushing is enough to update those.
+      #
+      # Secrets (STRAVA_CLIENT_SECRET, APP_SECRET) can't live in wrangler.toml,
+      # so this step also pushes them from GitHub Actions secrets on every
+      # deploy. Re-sending an unchanged secret is harmless.
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          secrets: |
+            STRAVA_CLIENT_SECRET
+            APP_SECRET
+        env:
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
