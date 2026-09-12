@@ -15,7 +15,7 @@ STRAVA_CLIENT_ID = "137524"
 
 # The URL where your frontend is hosted (GitHub Pages or Cloudflare Pages).
 # Used for CORS and for redirecting back after login. No trailing slash.
-FRONTEND_URL = "https://nmanjuonline.github.io/strava-manager"
+FRONTEND_URL = "https://nmanjuonline.github.io"
 
 # Secrets (never put these here) — set with:
 #   wrangler secret put STRAVA_CLIENT_SECRET
