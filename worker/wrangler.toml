@@ -1,6 +1,6 @@
 name = "strava-manager"
 main = "src/worker.js"
-compatibility_date = "2024-11-01"
+compatibility_date = "2024-11-11"
 
 # KV namespace used to store the single-athlete Strava token set.
 # Create it with:  wrangler kv namespace create STRAVA_MANAGER_TOKENS
