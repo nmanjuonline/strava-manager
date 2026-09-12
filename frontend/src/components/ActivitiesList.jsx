@@ -5,7 +5,7 @@ import {
   getAthlete,
   updateActivity,
 } from "../api.js";
-import { formatDistance, formatDuration, formatDate } from "../format.js";
+import { formatDistance, formatDuration, formatDate, formatTime } from "../format.js";
 import EditModal from "./EditModal.jsx";
 import SocialModal from "./SocialModal.jsx";
 import SplitsTable from "./SplitsTable.jsx";
@@ -147,7 +147,10 @@ export default function ActivitiesList() {
                 <div className="activity-main">
                   <p className="name">{activity.name}</p>
                   <div className="meta">
-                    <span>{formatDate(activity.start_date_local)}</span>
+                    <span>
+                      {formatDate(activity.start_date_local)} ·{" "}
+                      {formatTime(activity.start_date_local)}
+                    </span>
                     <span>{formatDistance(activity.distance)}</span>
                     <span>{formatDuration(activity.moving_time)}</span>
                     {activity.gear_id && (
