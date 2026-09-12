@@ -3,7 +3,7 @@ main = "src/worker.js"
 compatibility_date = "2024-11-01"
 
 # KV namespace used to store the single-athlete Strava token set.
-# Create it with:  wrangler kv namespace create TOKENS
+# Create it with:  wrangler kv namespace create STRAVA_MANAGER_TOKENS
 # then paste the returned id below.
 kv_namespaces = [
   { binding = "STRAVA_MANAGER_TOKENS", id = "ebc169e803ed4ea6bb25d46b22d59302" }
@@ -25,6 +25,10 @@ FRONTEND_URL = "https://nmanjuonline.github.io"
 # APP_SECRET: a password you make up yourself. It gates access to this
 #             worker so random visitors can't drive your Strava account
 #             through it. Put the same value in the frontend when prompted.
+
+# Live request/error logs, viewable in the Cloudflare dashboard under
+# Workers -> your worker -> Logs. Handy for debugging without needing
+# `wrangler tail` running locally.
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
