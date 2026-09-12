@@ -25,3 +25,15 @@ FRONTEND_URL = "https://nmanjuonline.github.io/strava-manager"
 # APP_SECRET: a password you make up yourself. It gates access to this
 #             worker so random visitors can't drive your Strava account
 #             through it. Put the same value in the frontend when prompted.
+
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+persist = true
