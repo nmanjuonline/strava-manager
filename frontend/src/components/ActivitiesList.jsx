@@ -163,6 +163,22 @@ export default function ActivitiesList() {
                       ♥ {activity.kudos_count ?? 0} · 💬{" "}
                       {activity.comment_count ?? 0}
                     </button>
+                    <button
+                      type="button"
+                      className="icon-trigger"
+                      title={expandedSplitsId === activity.id ? "Hide splits" : "Splits"}
+                      onClick={() => handleToggleSplits(activity)}
+                    >
+                      📊
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-trigger"
+                      title="Share"
+                      onClick={() => handleShare(activity)}
+                    >
+                      🔗
+                    </button>
                   </div>
                   {activity.description && (
                     <p className="description">{activity.description}</p>
@@ -172,18 +188,6 @@ export default function ActivitiesList() {
                   )}
                 </div>
                 <div className="row-actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleToggleSplits(activity)}
-                  >
-                    {expandedSplitsId === activity.id ? "Hide splits" : "Splits"}
-                  </button>
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleShare(activity)}
-                  >
-                    Share
-                  </button>
                   <button
                     className="edit-btn"
                     onClick={() => handleEditClick(activity)}
