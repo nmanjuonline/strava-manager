@@ -1,11 +1,13 @@
-# Activity Log — Strava activity manager
+# Strava-mini
 
 A small two-part app for browsing and editing your Strava activities:
 
 - **`frontend/`** — a React app (static, deployable to GitHub Pages or
-  Cloudflare Pages) that lists your activities with pagination and lets
-  you edit name, description, gear (dropdown), sport type, and the
-  commute/trainer flags.
+  Cloudflare Pages) that lists your activities with pagination, shows
+  average pace/heart rate per activity, and lets you edit name,
+  description, gear (dropdown), sport type, and the commute/trainer
+  flags. Also includes per-activity splits, a share link, kudos/comments,
+  and search across your whole history by name or distance.
 - **`worker/`** — a Cloudflare Worker that holds your Strava app's
   client secret, handles the OAuth login, and proxies API calls. This
   exists because GitHub Pages / Cloudflare Pages are static hosts and
@@ -16,13 +18,19 @@ Both pieces talk over plain HTTPS, so you can host the frontend on
 GitHub Pages while the worker runs on Cloudflare, or put both on
 Cloudflare — your choice.
 
-## Prerequisites
-
-- **Node.js 20+** (for building and deploying)
-- **npm** (included with Node.js)
-- A **Cloudflare account** (free plan works fine)
-- A **GitHub account** (if deploying frontend to GitHub Pages)
-- A **Strava account** with athlete data
+> **Renaming an existing deployment?** Cloudflare identifies a Worker by
+> the `name` field in `wrangler.toml` — changing it (as this project did,
+> from an earlier name to `strava-mini`) creates a *new* Worker with a new
+> URL. The KV namespace itself doesn't need recreating (its `id` stays
+> valid, only the binding label changed to `STRAVA_MINI_TOKENS`), but you
+> do need to: keep the same `id` in `kv_namespaces` from your old
+> `wrangler.toml`, re-run `wrangler secret put STRAVA_CLIENT_SECRET` and
+> `wrangler secret put APP_SECRET` for the new name (or let the GitHub
+> Actions workflow push them again), update your Strava API app's
+> Authorization Callback Domain to the new `*.workers.dev` host, and
+> update `VITE_WORKER_URL` in the frontend to match. Your existing
+> connection (refresh token in KV) carries over since the namespace `id`
+> didn't change.
 
 ## 1. Create a Strava API application
 
@@ -42,14 +50,14 @@ npm install -g wrangler   # if you don't have it already
 wrangler login
 
 # Create the KV namespace that stores your Strava refresh token
-wrangler kv namespace create STRAVA_MANAGER_TOKENS
+wrangler kv namespace create STRAVA_MINI_TOKENS
 # Copy the returned "id" into wrangler.toml under kv_namespaces
 ```
 
 Edit `worker/wrangler.toml`:
 - `STRAVA_CLIENT_ID` → your Strava app's Client ID
 - `FRONTEND_URL` → where the frontend will live, e.g.
-  `https://yourusername.github.io/strava-manager` (no trailing slash)
+  `https://yourusername.github.io/strava-mini` (no trailing slash)
 - the KV `id` from the command above
 
 Then set the two secrets (never stored in the repo):
@@ -70,11 +78,11 @@ wrangler deploy
 ```
 
 This prints your worker's URL, something like
-`https://strava-manager.yoursubdomain.workers.dev`.
+`https://strava-mini.yoursubdomain.workers.dev`.
 
 Now go back to your Strava API application settings and set the
 **Authorization Callback Domain** to that host (without `https://`),
-e.g. `strava-manager.yoursubdomain.workers.dev`.
+e.g. `strava-mini.yoursubdomain.workers.dev`.
 
 ## 3. Configure and run the frontend
 
@@ -177,3 +185,10 @@ automatically.
   current page came back full.
 - If you ever want to revoke access, click "Disconnect" in the app, or
   revoke the app from your Strava settings directly.
+- Search fetches your entire activity history once (in batches of 200,
+  Strava's max page size) the first time you open it, then filters
+  instantly from that cache. For large histories this can take a few
+  seconds and uses several Strava API calls; Strava's default rate
+  limit is 200 requests per 15 minutes.
+- The app password is stored under a new localStorage key as part of
+  this rename, so you'll be asked to re-enter it once after updating.

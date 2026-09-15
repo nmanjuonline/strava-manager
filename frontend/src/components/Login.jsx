@@ -14,7 +14,7 @@ export default function Login({ onSecretSaved }) {
 
   return (
     <div className="login-panel">
-      <h1>Activity Log</h1>
+      <h1>Strava Mini</h1>
       <p>
         Enter the app password you set as <code>APP_SECRET</code> on your
         worker, then connect your Strava account.

@@ -1,5 +1,5 @@
 const WORKER_URL = import.meta.env.VITE_WORKER_URL;
-const SECRET_STORAGE_KEY = "strava-manager-app-secret";
+const SECRET_STORAGE_KEY = "strava-mini-app-secret";
 
 export function getStoredSecret() {
   return localStorage.getItem(SECRET_STORAGE_KEY) || "";
