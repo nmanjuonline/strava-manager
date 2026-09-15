@@ -89,6 +89,16 @@ a {
   background: var(--danger);
 }
 
+.header-search-slot {
+  display: flex;
+  align-items: center;
+}
+
+.header-logout {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
 /* ---- Login ---- */
 
 .login-panel {
@@ -233,6 +243,62 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
+}
+
+.activity-datetime {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  opacity: 0.75;
+  margin: 0 0 12px;
+}
+
+.stat-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
+}
+
+.stat-block:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  opacity: 0.65;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.gear-line {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
 }
 
 .activity-main .description {
