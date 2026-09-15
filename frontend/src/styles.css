@@ -256,19 +256,27 @@ a {
 .core-stats {
   display: flex;
   flex-wrap: nowrap;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink);
   margin: 0 0 8px;
   overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.core-stats span {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .stat-sep {
   color: var(--ink-dim);
   opacity: 0.5;
   flex-shrink: 0;
+  user-select: none;
 }
 
 .gear-line {
