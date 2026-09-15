@@ -214,26 +214,17 @@ export default function ActivitiesList({ searchSlot }) {
               {formatTime(activity.start_date_local)}
             </p>
 
-            <div className="stat-strip">
-              <div className="stat-block">
-                <span className="stat-label">Distance</span>
-                <span className="stat-value">{formatDistance(activity.distance)}</span>
-              </div>
-              <div className="stat-block">
-                <span className="stat-label">Time</span>
-                <span className="stat-value">{formatDuration(activity.moving_time)}</span>
-              </div>
-              <div className="stat-block">
-                <span className="stat-label">Pace</span>
-                <span className="stat-value">{formatPace(activity.average_speed)}/km</span>
-              </div>
+            <div className="core-stats">
+              <span>{formatDistance(activity.distance)}</span>
+              <span className="stat-sep">·</span>
+              <span>{formatDuration(activity.moving_time)}</span>
+              <span className="stat-sep">·</span>
+              <span>{formatPace(activity.average_speed)}/km</span>
               {activity.average_heartrate && (
-                <div className="stat-block">
-                  <span className="stat-label">Avg HR</span>
-                  <span className="stat-value">
-                    {Math.round(activity.average_heartrate)} bpm
-                  </span>
-                </div>
+                <>
+                  <span className="stat-sep">·</span>
+                  <span>{Math.round(activity.average_heartrate)} bpm</span>
+                </>
               )}
             </div>
 
