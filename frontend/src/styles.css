@@ -255,18 +255,20 @@ a {
 
 .core-stats {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: 6px;
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ink);
   margin: 0 0 8px;
+  overflow-x: auto;
 }
 
 .stat-sep {
   color: var(--ink-dim);
   opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .gear-line {
