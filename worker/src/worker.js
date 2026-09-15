@@ -1,5 +1,5 @@
 /**
- * strava-manager
+ * strava-mini
  *
  * A small Cloudflare Worker that stands between the static frontend
  * (GitHub Pages / Cloudflare Pages) and the Strava API.
@@ -61,12 +61,12 @@ function checkSecret(request, env) {
 }
 
 async function getTokens(env) {
-  const raw = await env.STRAVA_MANAGER_TOKENS.get(TOKEN_KEY);
+  const raw = await env.STRAVA_MINI_TOKENS.get(TOKEN_KEY);
   return raw ? JSON.parse(raw) : null;
 }
 
 async function saveTokens(env, tokens) {
-  await env.STRAVA_MANAGER_TOKENS.put(TOKEN_KEY, JSON.stringify(tokens));
+  await env.STRAVA_MINI_TOKENS.put(TOKEN_KEY, JSON.stringify(tokens));
 }
 
 /** Returns a valid access token, refreshing via Strava if it's expired. */
@@ -159,7 +159,7 @@ async function handleStatus(request, env) {
 }
 
 async function handleLogout(request, env) {
-  await env.STRAVA_MANAGER_TOKENS.delete(TOKEN_KEY);
+  await env.STRAVA_MINI_TOKENS.delete(TOKEN_KEY);
   return json({ ok: true }, 200, env);
 }
 
@@ -350,12 +350,12 @@ export default {
           env
         );
       }
-      if (!env.STRAVA_MANAGER_TOKENS) {
+      if (!env.STRAVA_MINI_TOKENS) {
         return json(
           {
             error: "Worker misconfigured",
             message:
-              "STRAVA_MANAGER_TOKENS KV binding is missing. Check the kv_namespaces id in wrangler.toml.",
+              "STRAVA_MINI_TOKENS KV binding is missing. Check the kv_namespaces id in wrangler.toml.",
           },
           500,
           env

@@ -56,7 +56,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>Activity Log</h1>
+        <h1>Strava Mini</h1>
         <div className="status-pill">
           <span className="dot" />
           Connected

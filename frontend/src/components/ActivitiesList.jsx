@@ -5,12 +5,21 @@ import {
   getAthlete,
   updateActivity,
 } from "../api.js";
-import { formatDistance, formatDuration, formatDate, formatTime } from "../format.js";
+import {
+  formatDistance,
+  formatDuration,
+  formatDate,
+  formatTime,
+  formatPace,
+} from "../format.js";
 import EditModal from "./EditModal.jsx";
 import SocialModal from "./SocialModal.jsx";
 import SplitsTable from "./SplitsTable.jsx";
+import SearchPanel from "./SearchPanel.jsx";
 
 const PER_PAGE = 20;
+const SEARCH_FETCH_PAGE_SIZE = 200; // Strava's max per_page
+const SEARCH_FETCH_PAGE_CAP = 50; // safety cap: 50 * 200 = 10,000 activities
 
 export default function ActivitiesList() {
   const [page, setPage] = useState(1);
@@ -27,6 +36,16 @@ export default function ActivitiesList() {
   const [splitsLoadingId, setSplitsLoadingId] = useState(null);
   const [splitsError, setSplitsError] = useState("");
   const [copiedId, setCopiedId] = useState(null);
+
+  // Search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allActivities, setAllActivities] = useState(null);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [loadAllError, setLoadAllError] = useState("");
+  const [distanceBounds, setDistanceBounds] = useState(null);
+  const [distanceRange, setDistanceRange] = useState(null);
 
   useEffect(() => {
     getAthlete()
@@ -64,9 +83,9 @@ export default function ActivitiesList() {
 
   async function handleSave(id, fields) {
     const updated = await updateActivity(id, fields);
-    setActivities((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updated } : a))
-    );
+    const merge = (a) => (a.id === id ? { ...a, ...updated } : a);
+    setActivities((prev) => prev.map(merge));
+    if (allActivities) setAllActivities((prev) => prev.map(merge));
   }
 
   // The activity list Strava returns doesn't include description, so we
@@ -77,9 +96,9 @@ export default function ActivitiesList() {
     try {
       const detail = await getActivityDetail(activity.id);
       const merged = { ...activity, ...detail };
-      setActivities((prev) =>
-        prev.map((a) => (a.id === activity.id ? merged : a))
-      );
+      const merge = (a) => (a.id === activity.id ? merged : a);
+      setActivities((prev) => prev.map(merge));
+      if (allActivities) setAllActivities((prev) => prev.map(merge));
       setEditingActivity(merged);
     } catch (err) {
       setError(err.message || "Couldn't load activity details");
@@ -127,132 +146,205 @@ export default function ActivitiesList() {
     }
   }
 
+  // Strava has no server-side name/distance search, so searching "your
+  // entire history" means fetching everything once (in 200-at-a-time
+  // batches) and filtering client-side from then on.
+  async function fetchAllActivities() {
+    setLoadingAll(true);
+    setLoadAllError("");
+    setLoadedCount(0);
+    const collected = [];
+    try {
+      for (let p = 1; p <= SEARCH_FETCH_PAGE_CAP; p++) {
+        const batch = await getActivities(p, SEARCH_FETCH_PAGE_SIZE);
+        collected.push(...batch);
+        setLoadedCount(collected.length);
+        if (batch.length < SEARCH_FETCH_PAGE_SIZE) break;
+      }
+      setAllActivities(collected);
+      if (collected.length > 0) {
+        const distancesKm = collected.map((a) => (a.distance || 0) / 1000);
+        const min = Math.floor(Math.min(...distancesKm));
+        const max = Math.ceil(Math.max(...distancesKm));
+        setDistanceBounds([min, max]);
+        setDistanceRange([min, max]);
+      } else {
+        setDistanceBounds([0, 0]);
+        setDistanceRange([0, 0]);
+      }
+    } catch (err) {
+      setLoadAllError(err.message || "Couldn't load activity history");
+    } finally {
+      setLoadingAll(false);
+    }
+  }
+
+  function handleToggleSearch() {
+    const next = !searchOpen;
+    setSearchOpen(next);
+    if (next && allActivities === null && !loadingAll) {
+      fetchAllActivities();
+    }
+  }
+
+  const searching = searchOpen && allActivities !== null;
+  const filteredActivities = searching
+    ? allActivities.filter((a) => {
+        const matchesName =
+          !searchQuery.trim() ||
+          (a.name || "").toLowerCase().includes(searchQuery.trim().toLowerCase());
+        const km = (a.distance || 0) / 1000;
+        const matchesDistance =
+          !distanceRange || (km >= distanceRange[0] && km <= distanceRange[1]);
+        return matchesName && matchesDistance;
+      })
+    : [];
+
+  const displayedActivities = searching ? filteredActivities : activities;
+
+  function renderRow(activity) {
+    return (
+      <div key={activity.id}>
+        <div className="activity-row">
+          <span className="type-tag">{activity.sport_type || activity.type}</span>
+          <div className="activity-main">
+            <p className="name">{activity.name}</p>
+            <div className="meta">
+              <span>
+                {formatDate(activity.start_date_local)} ·{" "}
+                {formatTime(activity.start_date_local)}
+              </span>
+              <span>{formatDistance(activity.distance)}</span>
+              <span>{formatDuration(activity.moving_time)}</span>
+              <span>{formatPace(activity.average_speed)} /km</span>
+              {activity.average_heartrate && (
+                <span>{Math.round(activity.average_heartrate)} bpm</span>
+              )}
+              {activity.gear_id && (
+                <span>Gear: {gearNameById[activity.gear_id] || activity.gear_id}</span>
+              )}
+              <button
+                type="button"
+                className="social-trigger"
+                onClick={() => setSocialActivity(activity)}
+              >
+                ♥ {activity.kudos_count ?? 0} · 💬 {activity.comment_count ?? 0}
+              </button>
+              <button
+                type="button"
+                className="icon-trigger"
+                title={expandedSplitsId === activity.id ? "Hide splits" : "Splits"}
+                onClick={() => handleToggleSplits(activity)}
+              >
+                📊
+              </button>
+              <button
+                type="button"
+                className="icon-trigger"
+                title="Share"
+                onClick={() => handleShare(activity)}
+              >
+                🔗
+              </button>
+            </div>
+            {activity.description && <p className="description">{activity.description}</p>}
+            {copiedId === activity.id && <p className="copy-toast">Link copied</p>}
+          </div>
+          <div className="row-actions">
+            <button
+              className="edit-icon-btn"
+              title="Edit"
+              onClick={() => handleEditClick(activity)}
+              disabled={editLoadingId === activity.id}
+            >
+              {editLoadingId === activity.id ? (
+                <span className="edit-spinner" />
+              ) : (
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {expandedSplitsId === activity.id && (
+          <div className="splits-wrap">
+            {splitsLoadingId === activity.id && (
+              <div className="splits-empty">Loading splits…</div>
+            )}
+            {splitsError && splitsLoadingId !== activity.id && (
+              <div className="error-text">{splitsError}</div>
+            )}
+            {splitsCache[activity.id] && splitsLoadingId !== activity.id && (
+              <SplitsTable splits={splitsCache[activity.id]} />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
-      {loading && <div className="loading-state">Loading activities…</div>}
+      <SearchPanel
+        open={searchOpen}
+        onToggle={handleToggleSearch}
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        loading={loadingAll}
+        loadedCount={loadedCount}
+        error={loadAllError}
+        bounds={distanceBounds}
+        range={distanceRange}
+        onRangeChange={setDistanceRange}
+        resultCount={filteredActivities.length}
+      />
+
+      {!searching && loading && (
+        <div className="loading-state">Loading activities…</div>
+      )}
       {error && <div className="error-text">{error}</div>}
 
-      {!loading && !error && activities.length === 0 && (
-        <div className="empty-state">No activities on this page.</div>
-      )}
-
-      {!loading && activities.length > 0 && (
-        <div className="ledger">
-          {activities.map((activity) => (
-            <div key={activity.id}>
-              <div className="activity-row">
-                <span className="type-tag">
-                  {activity.sport_type || activity.type}
-                </span>
-                <div className="activity-main">
-                  <p className="name">{activity.name}</p>
-                  <div className="meta">
-                    <span>
-                      {formatDate(activity.start_date_local)} ·{" "}
-                      {formatTime(activity.start_date_local)}
-                    </span>
-                    <span>{formatDistance(activity.distance)}</span>
-                    <span>{formatDuration(activity.moving_time)}</span>
-                    {activity.gear_id && (
-                      <span>
-                        gear: {gearNameById[activity.gear_id] || activity.gear_id}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      className="social-trigger"
-                      onClick={() => setSocialActivity(activity)}
-                    >
-                      ♥ {activity.kudos_count ?? 0} · 💬{" "}
-                      {activity.comment_count ?? 0}
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-trigger"
-                      title={expandedSplitsId === activity.id ? "Hide splits" : "Splits"}
-                      onClick={() => handleToggleSplits(activity)}
-                    >
-                      📊
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-trigger"
-                      title="Share"
-                      onClick={() => handleShare(activity)}
-                    >
-                      🔗
-                    </button>
-                  </div>
-                  {activity.description && (
-                    <p className="description">{activity.description}</p>
-                  )}
-                  {copiedId === activity.id && (
-                    <p className="copy-toast">Link copied</p>
-                  )}
-                </div>
-                <div className="row-actions">
-                  <button
-                    className="edit-icon-btn"
-                    title="Edit"
-                    onClick={() => handleEditClick(activity)}
-                    disabled={editLoadingId === activity.id}
-                  >
-                    {editLoadingId === activity.id ? (
-                      <span className="edit-spinner" />
-                    ) : (
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {expandedSplitsId === activity.id && (
-                <div className="splits-wrap">
-                  {splitsLoadingId === activity.id && (
-                    <div className="splits-empty">Loading splits…</div>
-                  )}
-                  {splitsError && splitsLoadingId !== activity.id && (
-                    <div className="error-text">{splitsError}</div>
-                  )}
-                  {splitsCache[activity.id] && splitsLoadingId !== activity.id && (
-                    <SplitsTable splits={splitsCache[activity.id]} />
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+      {!loading && !error && displayedActivities.length === 0 && (
+        <div className="empty-state">
+          {searching ? "No activities match your search." : "No activities on this page."}
         </div>
       )}
 
-      <div className="pagination">
-        <button
-          className="btn btn-ghost"
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1 || loading}
-        >
-          ← Prev
-        </button>
-        <span className="page-label">Page {page}</span>
-        <button
-          className="btn btn-ghost"
-          onClick={() => setPage((p) => p + 1)}
-          disabled={!hasNextPage || loading}
-        >
-          Next →
-        </button>
-      </div>
+      {displayedActivities.length > 0 && (
+        <div className="ledger">{displayedActivities.map(renderRow)}</div>
+      )}
+
+      {!searching && (
+        <div className="pagination">
+          <button
+            className="btn btn-ghost"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1 || loading}
+          >
+            ← Prev
+          </button>
+          <span className="page-label">Page {page}</span>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!hasNextPage || loading}
+          >
+            Next →
+          </button>
+        </div>
+      )}
 
       {editingActivity && (
         <EditModal
@@ -264,12 +356,8 @@ export default function ActivitiesList() {
       )}
 
       {socialActivity && (
-        <SocialModal
-          activity={socialActivity}
-          onClose={() => setSocialActivity(null)}
-        />
+        <SocialModal activity={socialActivity} onClose={() => setSocialActivity(null)} />
       )}
     </div>
   );
 }
-
