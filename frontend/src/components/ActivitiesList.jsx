@@ -21,7 +21,7 @@ const PER_PAGE = 20;
 const SEARCH_FETCH_PAGE_SIZE = 200; // Strava's max per_page
 const SEARCH_FETCH_PAGE_CAP = 50; // safety cap: 50 * 200 = 10,000 activities
 
-export default function ActivitiesList() {
+export default function ActivitiesList({ searchSlot }) {
   const [page, setPage] = useState(1);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,20 +209,40 @@ export default function ActivitiesList() {
           <span className="type-tag">{activity.sport_type || activity.type}</span>
           <div className="activity-main">
             <p className="name">{activity.name}</p>
-            <div className="meta">
-              <span>
-                {formatDate(activity.start_date_local)} ·{" "}
-                {formatTime(activity.start_date_local)}
-              </span>
-              <span>{formatDistance(activity.distance)}</span>
-              <span>{formatDuration(activity.moving_time)}</span>
-              <span>{formatPace(activity.average_speed)} /km</span>
+            <p className="activity-datetime">
+              {formatDate(activity.start_date_local)} ·{" "}
+              {formatTime(activity.start_date_local)}
+            </p>
+
+            <div className="stat-strip">
+              <div className="stat-block">
+                <span className="stat-label">Distance</span>
+                <span className="stat-value">{formatDistance(activity.distance)}</span>
+              </div>
+              <div className="stat-block">
+                <span className="stat-label">Time</span>
+                <span className="stat-value">{formatDuration(activity.moving_time)}</span>
+              </div>
+              <div className="stat-block">
+                <span className="stat-label">Pace</span>
+                <span className="stat-value">{formatPace(activity.average_speed)}/km</span>
+              </div>
               {activity.average_heartrate && (
-                <span>{Math.round(activity.average_heartrate)} bpm</span>
+                <div className="stat-block">
+                  <span className="stat-label">Avg HR</span>
+                  <span className="stat-value">
+                    {Math.round(activity.average_heartrate)} bpm
+                  </span>
+                </div>
               )}
-              {activity.gear_id && (
-                <span>Gear: {gearNameById[activity.gear_id] || activity.gear_id}</span>
-              )}
+            </div>
+
+            {activity.gear_id && (
+              <p className="gear-line">{gearNameById[activity.gear_id] || activity.gear_id}</p>
+            )}
+            {activity.description && <p className="description">{activity.description}</p>}
+
+            <div className="action-row">
               <button
                 type="button"
                 className="social-trigger"
@@ -247,7 +267,6 @@ export default function ActivitiesList() {
                 🔗
               </button>
             </div>
-            {activity.description && <p className="description">{activity.description}</p>}
             {copiedId === activity.id && <p className="copy-toast">Link copied</p>}
           </div>
           <div className="row-actions">
@@ -309,6 +328,7 @@ export default function ActivitiesList() {
         range={distanceRange}
         onRangeChange={setDistanceRange}
         resultCount={filteredActivities.length}
+        slot={searchSlot}
       />
 
       {!searching && loading && (

@@ -7,6 +7,7 @@ export default function App() {
   const [hasSecret, setHasSecret] = useState(!!getStoredSecret());
   const [connected, setConnected] = useState(null); // null = checking
   const [checkError, setCheckError] = useState("");
+  const [searchSlot, setSearchSlot] = useState(null);
 
   const checkStatus = useCallback(() => {
     if (!getStoredSecret()) {
@@ -58,18 +59,15 @@ export default function App() {
       <header className="app-header">
         <h1>Strava Mini</h1>
         <div className="status-pill">
-          <span className="dot" />
-          Connected
-          <button
-            className="btn btn-ghost"
-            style={{ marginLeft: 12, padding: "4px 10px" }}
-            onClick={handleLogout}
-          >
-            Disconnect
+          <span className="dot" title="Connected" />
+          <div ref={setSearchSlot} className="header-search-slot" />
+          <button className="btn btn-ghost header-logout" onClick={handleLogout}>
+            Logout
           </button>
         </div>
       </header>
-      <ActivitiesList />
+      <ActivitiesList searchSlot={searchSlot} />
     </div>
   );
 }
+
